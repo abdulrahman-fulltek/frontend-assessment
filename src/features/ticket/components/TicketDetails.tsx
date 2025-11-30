@@ -32,8 +32,8 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
   console.log('TicketDetails - replyToAuthor:', replyToAuthor);
 
   // Calculate dynamic panel sizes based on toggle states
-  const leftSize = isLeftContentVisible ? 20 : 4;
-  const rightSize = isRequestsPanelOpen ? 20 : 4;
+  const leftSize = isLeftContentVisible ? 20 : 8;
+  const rightSize = isRequestsPanelOpen ? 20 : 8;
   const mainDefaultSize = 100 - leftSize - rightSize;
 
   // Force panel recalculation when toggle states change
@@ -142,7 +142,7 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
       
       <section
         className={cn(
-          "flex flex-1 rounded-xl rounded-t-none border-x border-b border-slate-200 bg-white relative",
+          "flex flex-1 rounded-xl rounded-t-none border-l border-x border-b border-slate-200 bg-white relative",
           isFullscreen && "fixed inset-0 z-50",
           className,
         )}
@@ -151,14 +151,14 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
         {/* Left sidebar: fixed width, simple layout */}
         <Panel 
           defaultSize={leftSize} 
-          minSize={8} 
+          minSize={leftSize} 
           maxSize={30}
           className={cn(
             isFullscreen && "hidden"
           )}
         >
           <aside className="flex h-full flex-row border-l border-slate-200 bg-slate-50/70">
-            <nav className="flex w-16 shrink-0 flex-col items-center gap-4 border-l border-slate-200 py-6">
+            <nav className="flex w-16 shrink-0 flex-col items-center gap-4 border-l border-r border-slate-200 py-6">
               <button
                 type="button"
                 data-section="actions"
@@ -227,7 +227,7 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
 
             {/* Content column */}
             {isLeftContentVisible && (
-              <div className="flex flex-1 flex-col border-l border-slate-200 bg-white px-4 py-4 text-xs text-slate-600 min-w-[200px] max-w-xs">
+              <div className="flex flex-1 flex-col border-l border-slate-200 bg-white px-4 py-4 text-xs text-slate-600 min-w-[200px]">
                 {activeSidebarSection === "timeline" && (
                   <MessageTimeline messages={sampleMessages} />
                 )}
@@ -255,10 +255,10 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
         {/* Main ticket content - resizable from both sides */}
         <Panel 
           defaultSize={mainDefaultSize} 
-          minSize={20} 
-          maxSize={90}
+          minSize={10} 
+          maxSize={95}
         >
-          <div className="flex h-full min-w-0 flex-1 flex-row-reverse">
+          <div className="flex h-full min-w-0 flex-1 flex-row-reverse border-x-gray-200 border-l">
             {/* Center: existing ticket content */}
             <div className="flex min-w-0 flex-1 flex-col">
               {/* Top header area */}
@@ -406,7 +406,7 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
         {/* Right sidebar: fixed width, simple layout */}
         <Panel 
           defaultSize={rightSize} 
-          minSize={8} 
+          minSize={rightSize} 
           maxSize={30}
           className={cn(
             isFullscreen && "hidden"
@@ -431,9 +431,9 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
         aria-label={isLeftContentVisible ? "إخفاء لوحة التفاصيل" : "إظهار لوحة التفاصيل"}
       >
         {isLeftContentVisible ? (
-          <ChevronRight className="h-2 w-2" />
-        ) : (
           <ChevronLeft className="h-2 w-2" />
+        ) : (
+          <ChevronRight className="h-2 w-2" />
         )}
       </button>
 
@@ -448,9 +448,9 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
         aria-label={isRequestsPanelOpen ? "إخفاء قائمة الطلبات" : "إظهار قائمة الطلبات"}
       >
         {isRequestsPanelOpen ? (
-          <ChevronLeft className="h-2 w-2" />
-        ) : (
           <ChevronRight className="h-2 w-2" />
+        ) : (
+          <ChevronLeft className="h-2 w-2" />
         )}
       </button>
     </section>
