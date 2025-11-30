@@ -10,9 +10,8 @@ import {
   Wallet2,
   CalendarCheck,
   ClipboardList,
-  Settings2,
-  ChevronRight,
-  ChevronLeft,
+
+  Settings,
 } from "lucide-react";
 
 import { cn } from "../../../lib/utils";
@@ -50,7 +49,7 @@ const ITEMS: SidebarItem[] = [
   { key: "finance", label: "المالية", icon: Wallet2 },
   { key: "calendar", label: "التقويم", icon: CalendarCheck },
   { key: "requests", label: "الطلبات", icon: ClipboardList },
-  { key: "settings", label: "الإعدادات", icon: Settings2 },
+  { key: "settings", label: "الإعدادات", icon: Settings },
 ];
 
 export const RightSideBar = memo(function RightSideBar({ className }: Props) {
@@ -74,8 +73,8 @@ export const RightSideBar = memo(function RightSideBar({ className }: Props) {
 
   return (
     <aside className={cn("flex h-full flex-row-reverse bg-white", className)}>
-      {/* Right column: icon-only vertical nav */}
-      <nav className="flex w-16 flex-col items-center gap-4 border-l border-slate-200 py-6">
+      {/* Right column: icon-only vertical nav - fixed width */}
+      <nav className="flex w-16 shrink-0 flex-col items-center gap-4 border-l border-slate-200 py-6">
         {ITEMS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -93,8 +92,8 @@ export const RightSideBar = memo(function RightSideBar({ className }: Props) {
 
       {/* طلبات list - simple layout without internal resizer */}
       {isRequestsPanelOpen && (
-        <div className="flex w-64 min-w-[200px] max-w-xs flex-col border-r border-slate-200 bg-slate-50/80 px-3 py-4 text-sm">
-          <div className="mb-2 flex items-center justify-between">
+        <div className="flex flex-1 flex-col border-r border-slate-200 bg-slate-50/80 px-3 py-4 text-sm min-w-[200px]">
+          <div className="w-fit mb-2 flex items-center justify-between">
             <span className="font-medium text-slate-800">الطلبات</span>
           </div>
           <ul className="space-y-1 text-slate-600">
@@ -122,19 +121,6 @@ export const RightSideBar = memo(function RightSideBar({ className }: Props) {
         </div>
       )}
 
-      {/* Toggle button */}
-      <button
-        type="button"
-        onClick={handleRequestsPanelToggle}
-        className="flex w-6 items-center justify-center border-l border-slate-200 bg-white text-slate-400 hover:text-emerald-500"
-        aria-label={isRequestsPanelOpen ? "إخفاء قائمة الطلبات" : "إظهار قائمة الطلبات"}
-      >
-        {isRequestsPanelOpen ? (
-          <ChevronRight className="h-4 w-4" />
-        ) : (
-          <ChevronLeft className="h-4 w-4" />
-        )}
-      </button>
     </aside>
   );
 })

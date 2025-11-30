@@ -2,7 +2,7 @@
 import type { ComponentType } from "react";
 import { memo, useCallback, useMemo } from "react";
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
-import { ChevronDown, ChevronLeft, ChevronRight, CheckSquare, FileText, Flag, Mail, Maximize, Minimize, MoreVertical, Users } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, CheckSquare, FileText, Flag, Mail, Maximize, Minimize, MoreVertical, Users, PanelLeft, PanelRight } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { MessageList } from "./MessageList";
 import { MessageTimeline } from "./MessageTimeline";
@@ -123,24 +123,42 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
     setIsLeftContentVisible((prev) => !prev);
   }, [setIsLeftContentVisible]);
 
+  const handleRightSidebarToggle = useCallback(() => {
+    setIsRequestsPanelOpen((prev) => !prev);
+  }, [setIsRequestsPanelOpen]);
+
   
   return (
-    <section
-      className={cn(
-        "flex flex-1 rounded-xl rounded-t-none border-x border-b border-slate-200 bg-white",
-        isFullscreen && "fixed inset-4 z-40",
-        className,
+    <>
+      {/* Backdrop overlay for editor fullscreen mode */}
+      {isEditorFullscreen && (
+        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
       )}
-    >
+      
+      {/* Backdrop overlay for ticket details fullscreen mode */}
+      {isFullscreen && !isEditorFullscreen && (
+        <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" />
+      )}
+      
+      <section
+        className={cn(
+          "flex flex-1 rounded-xl rounded-t-none border-x border-b border-slate-200 bg-white relative",
+          isFullscreen && "fixed inset-0 z-50",
+          className,
+        )}
+      >
       <PanelGroup key={panelKey} direction="horizontal" className="flex flex-1">
         {/* Left sidebar: fixed width, simple layout */}
         <Panel 
           defaultSize={leftSize} 
-          minSize={4} 
+          minSize={8} 
           maxSize={30}
+          className={cn(
+            isFullscreen && "hidden"
+          )}
         >
           <aside className="flex h-full flex-row border-l border-slate-200 bg-slate-50/70">
-            <nav className="flex w-16 flex-col items-center gap-4 border-l border-slate-200 py-6">
+            <nav className="flex w-16 shrink-0 flex-col items-center gap-4 border-l border-slate-200 py-6">
               <button
                 type="button"
                 data-section="actions"
@@ -209,7 +227,7 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
 
             {/* Content column */}
             {isLeftContentVisible && (
-              <div className="flex w-64 min-w-[200px] max-w-xs flex-col border-l border-slate-200 bg-white px-4 py-4 text-xs text-slate-600">
+              <div className="flex flex-1 flex-col border-l border-slate-200 bg-white px-4 py-4 text-xs text-slate-600 min-w-[200px] max-w-xs">
                 {activeSidebarSection === "timeline" && (
                   <MessageTimeline messages={sampleMessages} />
                 )}
@@ -222,19 +240,7 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
               </div>
             )}
 
-            {/* Toggle strip */}
-            <button
-              type="button"
-              onClick={handleLeftContentToggle}
-              className="flex w-6 items-center justify-center border-l border-slate-200 bg-white text-slate-400 hover:text-emerald-500"
-              aria-label={isLeftContentVisible ? "إخفاء لوحة التفاصيل" : "إظهار لوحة التفاصيل"}
-            >
-              {isLeftContentVisible ? (
-                <ChevronLeft className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-            </button>
+            {/* Removed toggle strip - now floating */}
           </aside>
         </Panel>
 
@@ -249,7 +255,7 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
         {/* Main ticket content - resizable from both sides */}
         <Panel 
           defaultSize={mainDefaultSize} 
-          minSize={30} 
+          minSize={20} 
           maxSize={90}
         >
           <div className="flex h-full min-w-0 flex-1 flex-row-reverse">
@@ -307,7 +313,7 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
                 <div
                   className={cn(
                     "mt-2 rounded-xl border border-slate-200 bg-slate-50/80 p-3",
-                    isEditorFullscreen && "fixed inset-x-10 bottom-10 top-24 z-50 bg-white",
+                    isEditorFullscreen && "fixed inset-x-10 bottom-10 top-24 z-50 bg-white shadow-2xl",
                   )}
                 >
                   <div className="mb-2 flex flex-row-reverse items-center justify-between text-xs text-slate-500">
@@ -400,14 +406,54 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
         {/* Right sidebar: fixed width, simple layout */}
         <Panel 
           defaultSize={rightSize} 
-          minSize={4} 
+          minSize={8} 
           maxSize={30}
+          className={cn(
+            isFullscreen && "hidden"
+          )}
         >
           <div className="h-full border-l border-slate-200 bg-white">
             <RightSideBar className="h-full" />
           </div>
         </Panel>
       </PanelGroup>
+
+      {/* Floating toggle buttons */}
+      {/* Floating toggle buttons - hidden in fullscreen mode */}
+      {/* Left sidebar toggle - positioned inside TicketDetails */}
+      <button
+        type="button"
+        onClick={handleLeftContentToggle}
+        className={cn(
+          "absolute left-11 top-1/2 -translate-y-1/2 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white shadow-lg transition-all hover:scale-110 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600",
+          isFullscreen && "hidden"
+        )}
+        aria-label={isLeftContentVisible ? "إخفاء لوحة التفاصيل" : "إظهار لوحة التفاصيل"}
+      >
+        {isLeftContentVisible ? (
+          <ChevronRight className="h-2 w-2" />
+        ) : (
+          <ChevronLeft className="h-2 w-2" />
+        )}
+      </button>
+
+      {/* Right sidebar toggle - positioned inside TicketDetails */}
+      <button
+        type="button"
+        onClick={handleRightSidebarToggle}
+        className={cn(
+          "absolute right-11 top-1/2 -translate-y-1/2 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white shadow-lg transition-all hover:scale-110 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600",
+          isFullscreen && "hidden"
+        )}
+        aria-label={isRequestsPanelOpen ? "إخفاء قائمة الطلبات" : "إظهار قائمة الطلبات"}
+      >
+        {isRequestsPanelOpen ? (
+          <ChevronLeft className="h-2 w-2" />
+        ) : (
+          <ChevronRight className="h-2 w-2" />
+        )}
+      </button>
     </section>
+    </>
   );
 });
