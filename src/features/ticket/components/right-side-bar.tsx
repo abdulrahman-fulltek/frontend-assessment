@@ -11,9 +11,14 @@ import {
   CalendarCheck,
   ClipboardList,
   Settings2,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 
 import { cn } from "../../../lib/utils";
+import { useAtom } from "jotai";
+import { ticketListAtom, openedTicketIdsAtom, currentTicketIdAtom } from "../atoms/ticketAtoms";
+import { isRequestsListOpenAtom } from "../atoms/rightSideBarAtoms";
 
 interface Props {
   className?: string;
@@ -49,7 +54,23 @@ const ITEMS: SidebarItem[] = [
 ];
 
 export const RightSideBar = memo(function RightSideBar({ className }: Props) {
+  const [tickets] = useAtom(ticketListAtom);
+  const [openedTicketIds, setOpenedTicketIds] = useAtom(openedTicketIdsAtom);
+  const [currentTicketId, setCurrentTicketId] = useAtom(currentTicketIdAtom);
+  const [isRequestsPanelOpen, setIsRequestsPanelOpen] = useAtom(isRequestsListOpenAtom);
+
   const isActive = useCallback((key: SidebarItemKey) => key === "requests", []);
+
+  const handleRequestsPanelToggle = useCallback(() => {
+    setIsRequestsPanelOpen((prev) => !prev);
+  }, [setIsRequestsPanelOpen]);
+
+  const handleTicketClick = useCallback((ticketId: string) => {
+    if (!openedTicketIds.includes(ticketId)) {
+      setOpenedTicketIds([...openedTicketIds, ticketId]);
+    }
+    setCurrentTicketId(ticketId);
+  }, [openedTicketIds, setOpenedTicketIds, setCurrentTicketId]);
 
   return (
     <aside className={cn("flex h-full flex-row-reverse bg-white", className)}>
@@ -70,7 +91,50 @@ export const RightSideBar = memo(function RightSideBar({ className }: Props) {
         ))}
       </nav>
 
-      {/* Request list is handled inside TicketDetails for tighter coupling with tabs */}
+      {/* طلبات list - simple layout without internal resizer */}
+      {isRequestsPanelOpen && (
+        <div className="flex w-64 min-w-[200px] max-w-xs flex-col border-r border-slate-200 bg-slate-50/80 px-3 py-4 text-sm">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="font-medium text-slate-800">الطلبات</span>
+          </div>
+          <ul className="space-y-1 text-slate-600">
+            {tickets.map((ticket) => (
+              <li key={ticket.id}>
+                <button
+                  type="button"
+                  onClick={() => handleTicketClick(ticket.id)}
+                  className={cn(
+                    "w-full rounded-lg border px-3 py-2 text-right transition-colors",
+                    currentTicketId === ticket.id
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-slate-200 bg-white hover:border-emerald-200 hover:bg-emerald-50"
+                  )}
+                >
+                  <div className="flex flex-row-reverse items-center justify-between gap-2">
+                    <span className="truncate text-xs font-medium">{ticket.title}</span>
+                    <span className="text-[11px] text-slate-500">#{ticket.id}</span>
+                  </div>
+                  <div className="mt-1 text-[11px] text-slate-500">{ticket.customer}</div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Toggle button */}
+      <button
+        type="button"
+        onClick={handleRequestsPanelToggle}
+        className="flex w-6 items-center justify-center border-l border-slate-200 bg-white text-slate-400 hover:text-emerald-500"
+        aria-label={isRequestsPanelOpen ? "إخفاء قائمة الطلبات" : "إظهار قائمة الطلبات"}
+      >
+        {isRequestsPanelOpen ? (
+          <ChevronRight className="h-4 w-4" />
+        ) : (
+          <ChevronLeft className="h-4 w-4" />
+        )}
+      </button>
     </aside>
   );
-});
+})

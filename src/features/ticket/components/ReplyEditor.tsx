@@ -15,57 +15,32 @@ interface Props {
 export const ReplyEditor = memo(function ReplyEditor({ className, isFullscreen, onFastReply }: Props) {
   const editor = usePlateEditor();
 
+  // Use native commands for visual formatting only (bold/italic/underline/align).
+  // Fast replies and text insertion use the Plate editor API.
   const handleFormat = useCallback((command: string) => (e: React.MouseEvent) => {
     e.preventDefault();
+
     document.execCommand(command, false);
-    // Focus back to editor after formatting
-    setTimeout(() => {
-      const editorElement = document.querySelector("[data-slate-editor]") as HTMLDivElement;
-      editorElement?.focus();
-    }, 0);
+
+    const editorElement = document.querySelector("[data-slate-editor]") as HTMLDivElement;
+    editorElement?.focus();
   }, []);
 
   const handleFastReply = useCallback((templateText: string) => {
+    if (!editor) return;
+
     try {
+      // Focus editor first
       const editorElement = document.querySelector("[data-slate-editor]") as HTMLDivElement;
       if (editorElement) {
         editorElement.focus();
       }
-      
-      if (editor && typeof editor.insertText === 'function') {
-        editor.insertText(templateText);
-      } else if (editor && typeof editor.children !== 'undefined') {
-        console.log('Editor object:', editor);
-        console.log('Available methods:', Object.getOwnPropertyNames(editor));
-        
-        for (let i = 0; i < templateText.length; i++) {
-          setTimeout(() => {
-            document.execCommand('insertText', false, templateText[i]);
-          }, i * 10);
-        }
-      } else {
-        if (editorElement) {
-          document.execCommand('selectAll', false);
-          setTimeout(() => {
-            for (let i = 0; i < templateText.length; i++) {
-              setTimeout(() => {
-                document.execCommand('insertText', false, templateText[i]);
-              }, i * 10);
-            }
-          }, 100);
-        }
-      }
+
+      // Use Plate editor's insertText method
+      // This properly syncs with Slate editor state
+      (editor as any).insertText(templateText);
     } catch (error) {
-      console.log('Plate editor method failed, using fallback:', error);
-      const editorElement = document.querySelector("[data-slate-editor]") as HTMLDivElement;
-      if (editorElement) {
-        editorElement.focus();
-        for (let i = 0; i < templateText.length; i++) {
-          setTimeout(() => {
-            document.execCommand('insertText', false, templateText[i]);
-          }, i * 10);
-        }
-      }
+      console.error('Failed to insert fast reply text:', error);
     }
   }, [editor]);
 
@@ -100,11 +75,11 @@ export const ReplyEditor = memo(function ReplyEditor({ className, isFullscreen, 
         <div className="w-px h-6 bg-border mx-1" />
         <button
           type="button"
-          onClick={handleFormat("justifyLeft")}
+          onClick={handleFormat("justifyRight")}
           className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600 hover:shadow-md h-8 w-8 p-0"
-          title="Align Left"
+          title="Align Right"
         >
-          <AlignLeft className="h-4 w-4" />
+          <AlignRight className="h-4 w-4" />
         </button>
         <button
           type="button"
@@ -116,11 +91,11 @@ export const ReplyEditor = memo(function ReplyEditor({ className, isFullscreen, 
         </button>
         <button
           type="button"
-          onClick={handleFormat("justifyRight")}
+          onClick={handleFormat("justifyLeft")}
           className="inline-flex items-center justify-center rounded-md border border-slate-200 bg-white shadow-sm transition-all hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600 hover:shadow-md h-8 w-8 p-0"
-          title="Align Right"
+          title="Align Left"
         >
-          <AlignRight className="h-4 w-4" />
+          <AlignLeft className="h-4 w-4" />
         </button>
         <div className="w-px h-6 bg-border mx-1" />
         <button
@@ -166,8 +141,8 @@ export const ReplyEditor = memo(function ReplyEditor({ className, isFullscreen, 
       <Plate editor={editor}>
         <PlateContent 
           className={cn(
-            "w-full text-right leading-relaxed text-slate-700 outline-none p-3",
-            isFullscreen ? "h-4/5" : "h-[60px]"
+            "w-full text-right leading-relaxed text-slate-700 outline-none p-3 overflow-auto",
+            isFullscreen ? "h-3/5" : "h-[60px]"
           )}
           placeholder="اكتب ردك هنا..."
         />

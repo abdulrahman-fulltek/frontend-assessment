@@ -1,0 +1,23 @@
+/* Tabs bar horizontal scrollbar */
+.tabs-scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin; /* Firefox */
+}
+
+.tabs-scroll-x::-webkit-scrollbar {
+  height: 6px; /* Chrome, Safari, Edge */
+}
+
+.tabs-scroll-x::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tabs-scroll-x::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.8); /* slate-400-ish */
+  border-radius: 9999px;
+}
+
+.tabs-scroll-x::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 1); /* slate-500-ish */
+}

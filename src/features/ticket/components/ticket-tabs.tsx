@@ -51,39 +51,41 @@ export const TicketTabs = memo(function TicketTabs({ className }: Props) {
   return (
     <div
       className={cn(
-        "flex border-b border-slate-200 bg-white px-0 pt-0",
+        "flex bg-white px-0 pt-0 w-full min-w-0",
         className,
       )}
     >
-      <div className="flex w-full flex-row-reverse overflow-x-auto">
-        {openedTickets.map((ticket) => {
-          const isActive = ticket.id === currentTicketId;
+      <div className="w-full min-w-0 overflow-x-auto border-b border-slate-200 tabs-scroll-x">
+        <div className="flex flex-row-reverse flex-nowrap">
+          {openedTickets.map((ticket) => {
+            const isActive = ticket.id === currentTicketId;
 
-          return (
-            <button
-              key={ticket.id}
-              type="button"
-              data-id={ticket.id}
-              onClick={handleTabClick}
-              className={cn(
-                "flex items-center gap-2 border-x border-b-2 border-slate-200 px-4 py-2 text-sm transition-colors",
-                isActive
-                  ? "border-b-emerald-500 bg-emerald-50 text-emerald-700"
-                  : "bg-slate-50 text-slate-600 hover:bg-slate-100",
-              )}
-            >
-              <span className="truncate text-right">
-                {ticket.title}
-                <span className="mx-1 text-xs text-slate-400">#{ticket.id}</span>
-              </span>
-              <X
+            return (
+              <button
+                key={ticket.id}
+                type="button"
                 data-id={ticket.id}
-                onClick={handleTabClose}
-                className="h-3 w-3 cursor-pointer text-slate-400 hover:text-slate-600"
-              />
-            </button>
-          );
-        })}
+                onClick={handleTabClick}
+                className={cn(
+                  "flex items-center gap-2 border border-slate-200 px-4 py-2 text-sm transition-colors whitespace-nowrap",
+                  isActive
+                    ? "border-b-transparent text-slate-900"
+                    : "text-slate-500 hover:bg-slate-50",
+                )}
+              >
+                <span className="truncate text-right">
+                  {ticket.title}
+                  <span className="mx-1 text-xs text-slate-400">#{ticket.id}</span>
+                </span>
+                <X
+                  data-id={ticket.id}
+                  onClick={handleTabClose}
+                  className="h-3 w-3 cursor-pointer text-slate-400 hover:text-slate-600"
+                />
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
