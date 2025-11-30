@@ -2,10 +2,14 @@
 import type { MouseEvent } from "react";
 import { memo, useCallback, useMemo } from "react";
 import { useAtom } from "jotai";
-import { Maximize2, MoreVertical, CheckSquare, ChevronDown, Maximize, Flag, Mail, FileText, Users, Clock4, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreVertical, CheckSquare, ChevronDown, Maximize, Minimize, Flag, Mail, FileText, Users, Clock4, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "../../../lib/utils";
 import { currentTicketIdAtom, openedTicketIdsAtom, ticketListAtom } from "../atoms/ticketAtoms";
+import { ReplyEditor } from "./ReplyEditor";
+import { MessageTimeline } from "./MessageTimeline";
+import { MessageList } from "./MessageList";
+import { replyToAuthorAtom, type Message } from "../atoms/messageAtoms";
 import { activeTicketSidebarSectionAtom, isLeftSidebarContentVisibleAtom, isReplyEditorFullscreenAtom, isTicketDetailsFullscreenAtom, isRequestsPanelOpenAtom, type TicketSidebarSectionKey } from "../atoms/ticketUiAtoms";
 
 interface Props {
@@ -21,6 +25,53 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
   const [activeSidebarSection, setActiveSidebarSection] = useAtom(activeTicketSidebarSectionAtom);
   const [isLeftContentVisible, setIsLeftContentVisible] = useAtom(isLeftSidebarContentVisibleAtom);
   const [isRequestsPanelOpen, setIsRequestsPanelOpen] = useAtom(isRequestsPanelOpenAtom);
+  const [replyToAuthor, setReplyToAuthor] = useAtom(replyToAuthorAtom);
+  
+  console.log('TicketDetails - replyToAuthor:', replyToAuthor);
+
+  // Sample message data
+  const sampleMessages: Message[] = useMemo(() => [
+    {
+      id: "1",
+      author: "أحمد محمد",
+      authorEmail: "ahmed@example.com",
+      content: "مرحباً، لدي مشكلة في تسجيل الدخول إلى النظام. لا أستطيع الوصول إلى حسابي منذ الصباح.",
+      timestamp: new Date(2024, 8, 22, 10, 30),
+      type: "user"
+    },
+    {
+      id: "2",
+      author: "الدعم الفني",
+      authorEmail: "support@company.com",
+      content: "مرحباً أحمد، نأسف للإزعاج. هل يمكنك التحقق من كلمة المرور التي تستخدمها؟ هل قمت بتغييرها مؤخراً؟",
+      timestamp: new Date(2024, 8, 22, 10, 45),
+      type: "agent"
+    },
+    {
+      id: "3",
+      author: "أحمد محمد",
+      authorEmail: "ahmed@example.com",
+      content: "نعم، حاولت استخدام كلمة المرور الاعتيادية ولكن لم تنجح. هل يمكنكم إعادة تعيينها لي؟",
+      timestamp: new Date(2024, 8, 22, 11, 0),
+      type: "user"
+    },
+    {
+      id: "4",
+      author: "الدعم الفني",
+      authorEmail: "support@company.com",
+      content: "بالتأكيد. قمنا بإرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني. الرابط صالح لمدة 24 ساعة فقط.",
+      timestamp: new Date(2024, 8, 22, 11, 15),
+      type: "agent"
+    },
+    {
+      id: "5",
+      author: "أحمد محمد",
+      authorEmail: "ahmed@example.com",
+      content: "شكراً جزيلاً! استلمت الرابط وتمكنت من إعادة تعيين كلمة المرور بنجاح. الآن يمكنني الدخول إلى النظام.",
+      timestamp: new Date(2024, 8, 22, 11, 30),
+      type: "user"
+    }
+  ], []);
 
   const currentTicket = useMemo(
     () => tickets.find((t) => t.id === currentTicketId) ?? null,
@@ -39,11 +90,7 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
   const handleConvertClick = useCallback(() => {
   }, []);
 
-  const handleFastReplyClick = useCallback((event: MouseEvent<HTMLButtonElement>) => {
-    const templateId = event.currentTarget.dataset.templateId;
-    if (!templateId) return;
-  }, []);
-
+  
   const handleToggleEditorFullscreen = useCallback(() => {
     setIsEditorFullscreen((prev) => !prev);
   }, [setIsEditorFullscreen]);
@@ -159,34 +206,7 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
         {isLeftContentVisible && (
           <div className="flex w-64 min-w-0 flex-col border-l border-slate-200 bg-white px-4 py-4 text-xs text-slate-600">
             {activeSidebarSection === "timeline" && (
-              <div className="flex h-full flex-col space-y-3 overflow-y-auto">
-                <div className="flex flex-row-reverse items-center justify-between">
-                  <div className="flex flex-row-reverse items-center gap-2">
-                    <span className="text-sm font-semibold">السجلات الزمنية</span>
-                    <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-slate-100 px-2 text-[11px] font-medium">
-                      5
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mt-2 space-y-4 border-r border-slate-200 pr-4">
-                  {[1, 2, 3, 4, 5].map((index) => (
-                    <div key={index} className="relative pr-4">
-                      <div className="absolute -right-[9px] top-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 ring-2 ring-white">
-                        <Clock4 className="h-3 w-3" />
-                      </div>
-                      <div className="rounded-lg bg-white p-2 text-[11px] leading-relaxed shadow-sm">
-                        <div className="mb-1 font-medium text-slate-700">أحدث الطلبات</div>
-                        <div className="text-slate-500">قام الوكيل بتحديث حالة التذكرة ومراجعة التفاصيل.</div>
-                        <div className="mt-1 flex flex-row-reverse items-center justify-between text-[10px] text-slate-400">
-                          <span>22-09-2024</span>
-                          <span>02:32 م</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <MessageTimeline messages={sampleMessages} />
             )}
 
             {activeSidebarSection !== "timeline" && (
@@ -267,9 +287,13 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
               type="button"
               onClick={handleToggleFullscreen}
               className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600"
-              aria-label="تكبير"
+              aria-label={isFullscreen ? "تصغير" : "تكبير"}
             >
-              <Maximize2 className="h-4 w-4" />
+              {isFullscreen ? (
+                <Minimize className="h-4 w-4" />
+              ) : (
+                <Maximize className="h-4 w-4" />
+              )}
             </button>
 
             <button
@@ -285,7 +309,7 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
             <button
               type="button"
               onClick={handleConvertClick}
-              className="flex items-center gap-2 rounded-full bg-emerald-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-600"
+              className="flex items-center gap-2 rounded px-4 py-2 text-sm font-medium border transition hover:text-white hover:bg-emerald-600"
             >
               <CheckSquare className="h-4 w-4" />
               <span>تحويل لمهمة</span>
@@ -298,45 +322,13 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
           </div>
         </div>
 
-        {/* Replies list placeholder */}
-        <div className="flex-1 space-y-3 overflow-y-auto bg-slate-50/60 px-6 py-4">
-          <div className="rounded-lg border border-slate-200 bg-white p-4 text-sm leading-relaxed text-slate-700">
-            محتوى التذكرة والردود سيظهر هنا (محاكاة للجزء الأوسط في التصميم).
-          </div>
+        {/* Message list */}
+        <div className="flex-1 overflow-y-auto bg-slate-50/60 px-6 py-4">
+          <MessageList messages={sampleMessages} />
         </div>
 
         {/* Reply composer */}
         <div className="border-t border-slate-200 bg-white px-6 py-4">
-          <div className="mb-3 flex flex-row-reverse items-center gap-2 text-xs text-slate-600">
-            <span className="font-medium">ردود سريعة</span>
-            <div className="flex flex-row-reverse gap-2">
-              <button
-                type="button"
-                data-template-id="1"
-                onClick={handleFastReplyClick}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 hover:border-emerald-200 hover:bg-emerald-50"
-              >
-                مرحباً بك، سيتم استلام طلبكم ومتابعته
-              </button>
-              <button
-                type="button"
-                data-template-id="2"
-                onClick={handleFastReplyClick}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 hover:border-emerald-200 hover:bg-emerald-50"
-              >
-                تم استلام شكواكم وجاري معالجتها
-              </button>
-            </div>
-
-            <button
-              type="button"
-              data-template-id="from-template"
-              onClick={handleFastReplyClick}
-              className="ml-auto rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs hover:border-emerald-200 hover:bg-emerald-50"
-            >
-              استدعاء من قالب
-            </button>
-          </div>
 
           <div
             className={cn(
@@ -350,8 +342,30 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
                   CC
                 </span>
                 <div className="flex flex-row-reverse flex-wrap gap-1">
-                  <span className="rounded-full bg-white px-2 py-1">ahmed@example.com</span>
-                  <span className="rounded-full bg-white px-2 py-1">crashedf@example.com</span>
+                  <button
+                    type="button"
+                    onClick={() => setReplyToAuthor("ahmed@example.com")}
+                    className={cn(
+                      "rounded-full border px-2 py-1 transition-colors",
+                      replyToAuthor === "ahmed@example.com"
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-emerald-200 hover:bg-emerald-50"
+                    )}
+                  >
+                    ahmed@example.com
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setReplyToAuthor("crashedf@example.com")}
+                    className={cn(
+                      "rounded-full border px-2 py-1 transition-colors",
+                      replyToAuthor === "crashedf@example.com"
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-emerald-200 hover:bg-emerald-50"
+                    )}
+                  >
+                    crashedf@example.com
+                  </button>
                 </div>
               </div>
 
@@ -359,15 +373,17 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
                 type="button"
                 onClick={handleToggleEditorFullscreen}
                 className="flex items-center gap-1 rounded-md border border-slate-200 bg-white px-2 py-1 hover:border-emerald-200 hover:bg-emerald-50"
+                aria-label={isEditorFullscreen ? "تصغير المحرر" : "تكبير المحرر"}
               >
-                <Maximize className="h-3 w-3" />
-                <span>تكبير المحرر</span>
+                {isEditorFullscreen ? (
+                  <Minimize className="h-3 w-3" />
+                ) : (
+                  <Maximize className="h-3 w-3" />
+                )}
               </button>
             </div>
 
-            <div className="mb-3 rounded-lg border border-dashed border-slate-300 bg-white/80 p-3 text-sm text-slate-500">
-              مربع تحرير النص الغني (PlateJS) سيُدمج هنا.
-            </div>
+            <ReplyEditor className="mb-3" isFullscreen={isEditorFullscreen} />
 
             <div className="mt-2 flex flex-row-reverse items-center justify-between">
               <button
@@ -378,12 +394,18 @@ export const TicketDetails = memo(function TicketDetails({ className }: Props) {
                 <span>إضافة رد</span>
               </button>
 
-              <div className="flex flex-row-reverse items-center gap-2 text-xs text-slate-500">
+              <div className="mt-2 flex flex-row-reverse items-center justify-between">
                 <span>رد إلى:</span>
                 <div className="flex flex-row-reverse flex-wrap gap-1">
-                  <span className="rounded-full border border-slate-200 bg-white px-2 py-1">
-                    ahmed@example.com
-                  </span>
+                  {replyToAuthor ? (
+                    <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-emerald-700">
+                      {replyToAuthor}
+                    </span>
+                  ) : (
+                    <span className="rounded-full border border-slate-200 bg-white px-2 py-1 text-slate-500">
+                      جميع المستلمين
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

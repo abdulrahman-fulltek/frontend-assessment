@@ -10,11 +10,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@platejs/basic-nodes": "^52.0.1",
+    "@udecode/plate-basic-marks": "^41.0.0",
+    "@udecode/plate-common": "^41.0.13",
     "axios": "^1.13.2",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "jotai": "^2.15.1",
     "lucide-react": "^0.555.0",
     "path": "^0.12.7",
+    "platejs": "^52.0.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.4.0"
