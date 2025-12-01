@@ -7,7 +7,7 @@ import { cn } from "../../../lib/utils";
 import { MessageList } from "./MessageList";
 import { MessageTimeline } from "./MessageTimeline";
 import { ReplyEditor } from "./ReplyEditor";
-import { RightSideBar } from "./right-side-bar";
+import { RightSideBar } from "./RightSideBar";
 import { useAtom } from "jotai";
 import { currentTicketIdAtom, ticketListAtom, openedTicketIdsAtom } from "../atoms/ticketAtoms";
 import { replyToAuthorAtom, type Message } from "../atoms/messageAtoms";
